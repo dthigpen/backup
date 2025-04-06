@@ -57,8 +57,15 @@ function die {
 function targz_compress {
 	local input_path="${1?Must provide an input path to compress}"
 	local output_path="${2?Must provide an output file path}"
-	
-	tar -czvf "${output_path}" "${input_path}"
+
+    local input_path_absolute="$(realpath "${input_path}")"
+    local output_path_absolute="$(realpath "${output_path}")"
+    local input_dir="$(dirname "${input_path_absolute}")"
+    local input_name="$(basename "${input_path_absolute}")"
+
+    pushd "${input_dir}" > /dev/null
+    tar -czvf "${output_path}" "${input_name}"
+    popd > /dev/null
 }
 
 function zip_compress {
