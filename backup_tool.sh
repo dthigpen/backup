@@ -5,7 +5,8 @@ IFS=$'\n\t'
 trap cleanup SIGINT SIGTERM ERR EXIT
 
 # If switching to zip or another compression/encrtption functions, change the ext here
-BACKUP_EXTENSION='.tar.gz.gpg'
+BACKUP_EXTENSION='.zip'
+# BACKUP_EXTENSION='.tar.gz.gpg'
 TEMP_FILES=()
 
 function usage {
@@ -26,7 +27,6 @@ function msg {
   echo >&2 -e "${@}"
 }
 
-
 function cleanup {
   trap - SIGINT SIGTERM ERR EXIT
   # script cleanup here
@@ -36,7 +36,7 @@ function cleanup {
   do
 	  if [[ -n "${temp_file}" ]] && [[ -e "${temp_file}" ]]
 	  then
-	    msg "Removing ${temp_file}"
+	  	msg "Removing ${temp_file}"
 	    rm -rf "${temp_file}"
 	  fi
   done
@@ -86,13 +86,13 @@ function compress {
 	local input_path="${1?Must provide an input path to compress}"
 	local output_path="${2?Must provide an output file path}"
 
-	targz_compress "${input_path}" "${output_path}"
+	zip_compress "${input_path}" "${output_path}"
 }
 
 function zip_decompress {
 	local input_path="${1?Must provide an input file path to decompress}"
 	local output_path="${2:?Must provide an output directory path}"
-	unzip  "${input_path}" -d "${output_path}"
+	unzip  "${input_path}"/* -d "${output_path}"
 }
 
 function targz_decompress {
@@ -104,7 +104,10 @@ function targz_decompress {
 function decompress {
 	local input_path="${1?Must provide an input file path to decompress}"
 	local output_path="${2:?Must provide an output directory path}"
-	targz_decompress "${input_path}" "${output_path}"
+
+	ls "$(dirname ${input_path})"
+	sleep 1
+	zip_decompress "${input_path}" "${output_path}"
 }
 
 function zip_encrypt {
@@ -142,7 +145,7 @@ function encrypt {
 	local input_path="${1?Must provide a path to encrypt}"
 	local output_path="${2?Must provide an output file path}"
 
-	gpg_encrypt "${input_path}" "${output_path}"
+	zip_encrypt "${input_path}" "${output_path}"
 }
 
 function zip_decrypt {
@@ -171,7 +174,7 @@ function decrypt {
 	local input_path="${1?Must provide a file path to decrypt}"
 	local output_path="${2?Must provide an output path}"
 
-	gpg_decrypt  "${input_path}" "${output_path}"
+	zip_decrypt  "${input_path}" "${output_path}"
 }
 
 function make_backup {
@@ -199,7 +202,7 @@ function restore_backup {
 	local tmp_path="${tmp_dir}/${input_filename}.compressed.tmp"
 	decrypt "${input_path}" "${tmp_path}"
 	decompress "${tmp_path}" "${output_path}"
-	rm -f "${tmp_path}"
+	rm -rf "${tmp_path}"
 }
 
 function parse_args {
@@ -210,7 +213,6 @@ function parse_args {
 	ENC_PASSWD=''
 	USE_ENC_PASSWD='false'
 	while [[ $# -gt 0 ]]; do
-		msg "ARG: ${1-}"
 	    case "${1-}" in
 		    -h | --help) usage ;;
 		   	-d | --destination)
@@ -243,7 +245,7 @@ function parse_args {
   	ACTION="${POSITIONAL_ARGUMENTS[0]}"
 	FILES_TO_PROCESS=( "${POSITIONAL_ARGUMENTS[@]:1}" )
 }
-
+# set -x
 function main {
 	if [[ "${ACTION}" != 'backup' && "${ACTION}" != 'restore' ]]
 	then
