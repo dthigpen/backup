@@ -1,0 +1,16 @@
+root = true
+
+# Default for all files
+[*]
+charset = utf-8
+end_of_line = lf
+insert_final_newline = true
+trim_trailing_whitespace = true
+
+# Bash and Bats scripts
+[*.{sh,bash,bats}]
+indent_style = space
+indent_size = 2
+binary_next_line = true
+switch_case_indent = true
+keep_padding = false
