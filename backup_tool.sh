@@ -210,25 +210,29 @@ function parse_args() {
     shift
   done
 
+  ACTION="${POSITIONAL[0]}"
+  FILES_TO_PROCESS=("${POSITIONAL[@]:1}")
+  
   if [[ "${USE_ENC_PASSWD}" == 'true' ]]; then
     # show prompt if running interactively
     if [[ -t 0 ]]; then
       read -s -p 'Enter encryption password: ' ENC_PASSWD
       echo
-      read -s -p "Confirm password: " PASSWORD_CONFIRM
-      echo
-      if [[ "${ENC_PASSWD}" != "${PASSWORD_CONFIRM}" ]]; then
-        echo "Error: Passwords do not match." >&2
-        exit 1
+      if [[ "${ACTION}" == 'backup' ]]; then
+        read -s -p "Confirm password: " PASSWORD_CONFIRM
+        echo
+        if [[ "${ENC_PASSWD}" != "${PASSWORD_CONFIRM}" ]]; then
+          echo "Error: Passwords do not match." >&2
+          exit 1
+        fi
+        unset PASSWORD_CONFIRM
       fi
-      unset PASSWORD_CONFIRM
     else
       read -s ENC_PASSWD
     fi
   fi
 
-  ACTION="${POSITIONAL[0]}"
-  FILES_TO_PROCESS=("${POSITIONAL[@]:1}")
+ 
 }
 
 function main() {
