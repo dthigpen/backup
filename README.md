@@ -26,6 +26,11 @@ Restoring files from a backup file to /path/to/important/dir
 $ ./backup_tool.sh restore ~/backups/important_dir.backup.zip -d /path/to/important/dir 
 ```
 
+Print a single file backup to stdout
+```bash
+$ ./backup_tool.sh print ~/backups/important_dir.backup.zip
+```
+
 You can make multiple backup files and restore multiple backups by passing multiple directories or files.
 
 By default, the `zip_zipenc` strategy is used. This means that `zip` will first be used to compress the data into a single file, then an encypted `zip` will be used to encrypt that file. The other built-in strategy is `targz_gpg`, where the compression is done with `tar -z` and encryption with `gpg`. You can change the strategy used by passing in the `-s` argument.

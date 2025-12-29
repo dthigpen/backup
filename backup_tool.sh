@@ -174,12 +174,32 @@ function restore_backup() {
   decompress "$tmp_file" "$out"
 }
 
+function print_backup() {
+  local in=$1
+  local tmp_out_dir="$(mktemp_dir)"
+  TEMP_FILES+=("${tmp_out_dir}")
+  restore_backup "${in}" "${tmp_out_dir}"
+  local extracted_path
+  extracted_path="$(find "${tmp_out_dir}" -mindepth 1 -maxdepth 2)"
+
+  if [[ -d "${extracted_path}" ]]
+  then
+    die "Cannot print a directory (yet)"
+  elif [[ ! -f "${extracted_path}" ]]
+  then
+  ls -l "${tmp_out_dir}"
+    die "Not a valid file to print"
+  fi
+  # TODO later extend with flags like: --path some/file.txt , --list
+  cat "${extracted_path}"
+}
+
 # -------------------------------
 # CLI
 # -------------------------------
 function usage() {
   cat <<EOF
-Usage: $(basename "$0") [backup|restore] [options] file1 file2 ...
+Usage: $(basename "$0") [backup|restore|print] [options] file1 file2 ...
 Options:
   -d, --destination DIR    Output directory
   -s, --strategy NAME      Backup strategy (default: $BACKUP_STRATEGY, built-in: zip_zipenc, targz_gpg)
@@ -253,6 +273,8 @@ function main() {
     elif [[ "$ACTION" == "restore" ]]; then
       restore_backup "$f" "$output_dir"
       msg "Restored into: $output_dir"
+    elif [[ "$ACTION" == "print" ]]; then
+      print_backup "$f"
     else
       die "Unknown action: $ACTION"
     fi
